@@ -127,6 +127,9 @@ resource "aws_db_instance" "mariadb" {
 
 resource "aws_instance" "ec2_instance" {
   instance_type = "t2.micro"
+  ami                    = data.aws_ami.ubuntu_22_04.id
+  subnet_id              = aws_subnet.public.id
+  vpc_security_group_ids = [aws_security_group.ec2.id]
 }
 
 data "aws_ami" "ubuntu_22_04" {
@@ -140,9 +143,6 @@ data "aws_ami" "ubuntu_22_04" {
     values = ["hvm"]
   }
   owners                 = ["099720109477"]
-  ami                    = data.aws_ami.ubuntu_22_04.id
-  subnet_id              = aws_subnet.public.id
-  vpc_security_group_ids = [aws_security_group.ec2.id]
 }
 
 resource "aws_key_pair" "rsa" {
