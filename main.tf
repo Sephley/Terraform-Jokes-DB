@@ -32,14 +32,15 @@ resource "aws_subnet" "private" {
   count      = 2
   vpc_id     = aws_vpc.main.id
   cidr_block = cidrsubnet(aws_vpc.main.cidr_block, 8, 10 + count.index)
+  availability_zone = data.aws_availability_zones.available.names[count.index]
+  tags = {
+    Name = "private_${data.aws_availability_zones.available.names[count.index]}"
+  }
 }
 
 data "aws_availability_zones" "available" {
   state             = "available"
   #availability_zone = data.aws_availability_zones.available.names[count.index]
-  #tags = {
-    #Name = "private_${data.aws_availability_zones.available.names[count.index]}"
-  #}
 }
 
 resource "aws_route_table" "public" {
@@ -108,7 +109,7 @@ resource "aws_security_group" "rds" {
 
 resource "aws_db_subnet_group" "private" {
   name       = "db_subnet_group"
-  subnet_ids = [for subnet in aws_subnet.private : subnet.id]
+  subnet_ids = aws_subnet.private[*].id
 }
 
 resource "aws_db_instance" "mariadb" {
@@ -146,7 +147,7 @@ data "aws_ami" "ubuntu_22_04" {
 }
 
 resource "aws_key_pair" "rsa" {
-  key_name   = aws_key_pair.rsa.key_name
+  key_name   = "ssh-key"
   public_key = file("/home/sephley/.ssh/id_rsa.pub")
 }
 
